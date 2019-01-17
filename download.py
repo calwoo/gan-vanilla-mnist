@@ -20,7 +20,21 @@ def prepare_data_dir(path="./data"):
         os.mkdir(path)
 
 def download_mnist(dirpath):
-    pass
+    data_dir = os.path.join(dirpath, "mnist")
+    if os.path.exists(data_dir):
+        print("MNIST already found, aborting script.")
+        return
+    else:
+        os.mkdir(data_dir)
+    # now that we know we don't have it, download it from lecun's site
+    url_base = "http://yann.lecun.com/exdb/mnist/"
+    file_names = ['train-images-idx3-ubyte.gz',
+                'train-labels-idx1-ubyte.gz',
+                't10k-images-idx3-ubyte.gz',
+                't10k-labels-idx1-ubyte.gz']
+    # downloading logic
+    for filename in file_names:
+        
 
 
 
