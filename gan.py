@@ -22,14 +22,18 @@ z = tf.placeholder(tf.float32, [None, 100], name="inputs_z")
 
 def generator(z):
     with tf.variable_scope("generator"):
-        gen_fc1 = tf.layers.dense(z, units=128, activation=tf.nn.sigmoid)
-        gen_output = tf.layers.dense(gen_fc1, units=784, activation=tf.nn.sigmoid)
+        gen_fc1 = tf.layers.dense(z, units=128, activation=tf.nn.sigmoid,
+            kernel_initializer=tf.contrib.layers.xavier_initializer())
+        gen_output = tf.layers.dense(gen_fc1, units=784, activation=tf.nn.sigmoid,
+            kernel_initializer=tf.contrib.layers.xavier_initializer())
     return gen_output
 
 def discriminator(x):
     with tf.variable_scope("discriminator", reuse=tf.AUTO_REUSE):
-        disc_fc1 = tf.layers.dense(x, units=128, activation=tf.nn.sigmoid)
-        disc_logit = tf.layers.dense(disc_fc1, units=1)
+        disc_fc1 = tf.layers.dense(x, units=128, activation=tf.nn.sigmoid,
+            kernel_initializer=tf.contrib.layers.xavier_initializer())
+        disc_logit = tf.layers.dense(disc_fc1, units=1,
+            kernel_initializer=tf.contrib.layers.xavier_initializer())
         disc_prob = tf.nn.sigmoid(disc_logit)
     return disc_logit, disc_prob
 
@@ -44,31 +48,30 @@ through both generator/discriminator networks to train them.
 disc_real_logits, disc_real_prob = discriminator(x)
 disc_fake_logits, disc_fake_prob = discriminator(noise_samples)
 
+"""
 # does this loss not work?
 eps = 1e-6
 disc_loss = -tf.reduce_mean(tf.log(eps+disc_real_prob) + tf.log(eps+1-disc_fake_prob))
 gen_loss = tf.reduce_mean(tf.log(eps+1-disc_fake_prob))
-
+"""
 
 # how about this loss?
-"""
 disc_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
     logits=disc_real_logits, labels=tf.ones_like(disc_real_prob)) + tf.nn.sigmoid_cross_entropy_with_logits(
         logits=disc_fake_logits, labels=tf.zeros_like(disc_fake_prob)))
 gen_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
     logits=disc_fake_logits, labels=tf.ones_like(disc_fake_prob)))
-"""
 
 disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="discriminator")
 gen_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="generator")
 
 # gradient train
-disc_optimizer = tf.train.AdamOptimizer(disc_lr).minimize(disc_loss, var_list=disc_vars)
-gen_optimizer = tf.train.AdamOptimizer(gen_lr).minimize(gen_loss, var_list=gen_vars)
+disc_optimizer = tf.train.AdamOptimizer().minimize(disc_loss, var_list=disc_vars)
+gen_optimizer = tf.train.AdamOptimizer().minimize(gen_loss, var_list=gen_vars)
 
 # sampling helper function
 def sample_noise(num_samples):
-    return np.random.uniform(-1.0, 1.0, [num_samples, 100])
+    return np.random.uniform(-1.0, 1.0, size=[num_samples, 100])
 
 # training loop
 sess = tf.Session()

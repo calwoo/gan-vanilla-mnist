@@ -16,8 +16,9 @@ def plot_mnist(samples):
 
     for i, sample in enumerate(samples):
         ax = plt.subplot(grid[i])
+        ax.set_aspect("equal")
         plt.axis("off")
-        plt.imshow(sample.reshape(28,28), cmap="gray")
+        plt.imshow(sample.reshape(28,28), cmap="Greys_r")
     return fig
 
 def take_snapshot(samples, marker=0):
