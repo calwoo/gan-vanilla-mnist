@@ -39,3 +39,5 @@ def build_gif(gif_name="output"):
     list.sort(file_list, key=lambda x: int(x.split(".")[1].split("/")[2]))
     clip = mpy.ImageSequenceClip(file_list, fps=fps)
     clip.write_gif("{}.gif".format(gif_name), fps=fps)
+
+build_gif(gif_name="trained")

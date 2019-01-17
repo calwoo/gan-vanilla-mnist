@@ -14,7 +14,7 @@ mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 disc_lr = 0.02
 gen_lr = 0.008
 batch_size = 128
-num_epochs = 5000
+num_epochs = 10000
 
 # build GAN
 x = tf.placeholder(tf.float32, [None, 784], name="inputs_x")
@@ -92,7 +92,7 @@ for epoch in range(num_epochs):
     g_loss, _ = sess.run([gen_loss, gen_optimizer],
         feed_dict={z:z_noise})
 
-    if epoch % 500 == 0:
+    if epoch % 200 == 0:
         print("epoch %d, disc_loss = %.08f / gen_loss = %.08f" % (epoch, d_loss, g_loss))
         samples = sess.run(noise_samples, feed_dict={z: test_noise})
         take_snapshot(samples, marker)
