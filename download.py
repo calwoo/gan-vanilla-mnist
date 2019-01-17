@@ -8,10 +8,11 @@ import sys
 import gzip
 import argparse
 import requests
+import subprocess
 from progress.bar import Bar
 
 parser = argparse.ArgumentParser(description="downloader for MNIST.")
-parser.add_argument("datasets", type=str, choices=["mnist"],
+parser.add_argument("--dataset", type=str, choices=["mnist"],
     help="name of dataset to download")
 
 def prepare_data_dir(path="./data"):
@@ -34,20 +35,17 @@ def download_mnist(dirpath):
                 't10k-labels-idx1-ubyte.gz']
     # downloading logic
     for filename in file_names:
-        
-
-
-
-
-
-
-
-
-
+        url = (url_base + filename).format(**locals())
+        print(url)
+        out_path = os.path.join(data_dir, filename)
+        print("Downloading ", filename)
+        subprocess.call(["curl", url, "-o", out_path])
+        print("Decompressing ", filename)
+        subprocess.call(["gzip", "-d", out_path])
 
 if __name__ == "__main__":
     args = parser.parse_args()
     prepare_data_dir()
     # download the data
-    if "mnist" in args.datasets:
+    if "mnist" in args.dataset:
         download_mnist("./data")

@@ -57,6 +57,16 @@ batch_size = 32
 num_epochs = 10000
 
 # training loop
+sess = tf.Session()
+sess.run(tf.global_variables_initializer())
+
 for epoch in range(num_epochs):
     input_batch, _ = mnist.train.next_batch(batch_size)
+    z_noise = sample_noise(batch_size)
 
+    d_loss, _ = sess.run([disc_loss, disc_optimizer], 
+        feed_dict={x:input_batch, z:z_noise})
+    g_loss, _ = sess.run([gen_loss, gen_optimizer],
+        feed_dict={z:z_noise})
+    if epoch % 100 == 0:
+        print("epoch %d, disc_loss = %.03f / gen_loss = %.03f" % (epoch, d_loss, g_loss))
