@@ -11,14 +11,14 @@ z = tf.placeholder(tf.float32, [None, 100], name="inputs_z")
 
 def generator(z):
     with tf.variable_scope("generator"):
-        gen_fc1 = tf.layers.Dense(z, 128, tf.nn.relu)
-        gen_output = tf.layers.Dense(gen_fc1, 784, tf.nn.sigmoid)
+        gen_fc1 = tf.layers.dense(z, units=128, activation=tf.nn.relu)
+        gen_output = tf.layers.dense(gen_fc1, units=784, activation=tf.nn.sigmoid)
     return gen_output
 
 def discriminator(x):
-    with tf.variable_scope("discriminator"):
-        disc_fc1 = tf.layers.Dense(x, 128, tf.nn.relu)
-        disc_logit = tf.layers.Dense(disc_fc1, 1)
+    with tf.variable_scope("discriminator", reuse=tf.AUTO_REUSE):
+        disc_fc1 = tf.layers.dense(x, units=128, activation=tf.nn.relu)
+        disc_logit = tf.layers.dense(disc_fc1, units=1)
         disc_prob = tf.nn.sigmoid(disc_logit)
     return disc_logit, disc_prob
 
