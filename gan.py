@@ -11,10 +11,10 @@ from vis import *
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
 # hyperparameters
-disc_lr = 0.01
-gen_lr = 0.01
+disc_lr = 0.02
+gen_lr = 0.008
 batch_size = 128
-num_epochs = 10000
+num_epochs = 5000
 
 # build GAN
 x = tf.placeholder(tf.float32, [None, 784], name="inputs_x")
@@ -22,13 +22,13 @@ z = tf.placeholder(tf.float32, [None, 100], name="inputs_z")
 
 def generator(z):
     with tf.variable_scope("generator"):
-        gen_fc1 = tf.layers.dense(z, units=128, activation=tf.nn.relu)
+        gen_fc1 = tf.layers.dense(z, units=128, activation=tf.nn.sigmoid)
         gen_output = tf.layers.dense(gen_fc1, units=784, activation=tf.nn.sigmoid)
     return gen_output
 
 def discriminator(x):
     with tf.variable_scope("discriminator", reuse=tf.AUTO_REUSE):
-        disc_fc1 = tf.layers.dense(x, units=128, activation=tf.nn.relu)
+        disc_fc1 = tf.layers.dense(x, units=128, activation=tf.nn.sigmoid)
         disc_logit = tf.layers.dense(disc_fc1, units=1)
         disc_prob = tf.nn.sigmoid(disc_logit)
     return disc_logit, disc_prob
@@ -44,9 +44,20 @@ through both generator/discriminator networks to train them.
 disc_real_logits, disc_real_prob = discriminator(x)
 disc_fake_logits, disc_fake_prob = discriminator(noise_samples)
 
+# does this loss not work?
 eps = 1e-6
 disc_loss = -tf.reduce_mean(tf.log(eps+disc_real_prob) + tf.log(eps+1-disc_fake_prob))
 gen_loss = tf.reduce_mean(tf.log(eps+1-disc_fake_prob))
+
+
+# how about this loss?
+"""
+disc_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+    logits=disc_real_logits, labels=tf.ones_like(disc_real_prob)) + tf.nn.sigmoid_cross_entropy_with_logits(
+        logits=disc_fake_logits, labels=tf.zeros_like(disc_fake_prob)))
+gen_loss = tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(
+    logits=disc_fake_logits, labels=tf.ones_like(disc_fake_prob)))
+"""
 
 disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="discriminator")
 gen_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="generator")
@@ -74,12 +85,12 @@ for epoch in range(num_epochs):
     g_loss, _ = sess.run([gen_loss, gen_optimizer],
         feed_dict={z:z_noise})
 
-    if epoch % 1000 == 0:
+    if epoch % 500 == 0:
         print("epoch %d, disc_loss = %.08f / gen_loss = %.08f" % (epoch, d_loss, g_loss))
         take_snapshot(samples, marker)
         marker += 1
 
 # build gif
-build_gif("trained")
+build_gif(gif_name="trained")
 
 
