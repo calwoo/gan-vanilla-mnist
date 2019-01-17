@@ -2,6 +2,9 @@ import tensorflow as tf
 import numpy as np
 from tensorflow.examples.tutorials.mnist import input_data
 
+import sys
+import argparse
+
 # import mnist-- as always
 mnist = input_data.read_data_sets("MNIST_data/", one_hot=True)
 
@@ -40,8 +43,20 @@ disc_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="discrimin
 gen_vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope="generator")
 
 # gradient train
-disc_optimizer = tf.train.AdamOptimizer().minimize(disc_loss, var_list=disc_vars)
+disc_optimizer = tf.train.AdamOptimizer(disc_lr).minimize(disc_loss, var_list=disc_vars)
+gen_optimizer = tf.train.AdamOptimizer(gen_lr).minimize(gen_loss)
 
-for var in disc_vars:
-    print(var)
+# sampling helper function
+def sample_noise(num_samples):
+    return np.random.uniform(-1.0, 1.0, [num_samples, 100])
+
+# hyperparameters
+disc_lr = 0.01
+gen_lr = 0.03
+batch_size = 32
+num_epochs = 10000
+
+# training loop
+for epoch in range(num_epochs):
+    input_batch, _ = mnist.train.next_batch(batch_size)
 
