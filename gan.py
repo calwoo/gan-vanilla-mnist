@@ -22,7 +22,7 @@ z = tf.placeholder(tf.float32, [None, 100], name="inputs_z")
 
 def generator(z):
     with tf.variable_scope("generator"):
-        gen_fc1 = tf.layers.dense(z, units=128, activation=tf.nn.sigmoid,
+        gen_fc1 = tf.layers.dense(z, units=128, activation=tf.nn.relu,
             kernel_initializer=tf.contrib.layers.xavier_initializer())
         gen_output = tf.layers.dense(gen_fc1, units=784, activation=tf.nn.sigmoid,
             kernel_initializer=tf.contrib.layers.xavier_initializer())
@@ -30,7 +30,7 @@ def generator(z):
 
 def discriminator(x):
     with tf.variable_scope("discriminator", reuse=tf.AUTO_REUSE):
-        disc_fc1 = tf.layers.dense(x, units=128, activation=tf.nn.sigmoid,
+        disc_fc1 = tf.layers.dense(x, units=128, activation=tf.nn.relu,
             kernel_initializer=tf.contrib.layers.xavier_initializer())
         disc_logit = tf.layers.dense(disc_fc1, units=1,
             kernel_initializer=tf.contrib.layers.xavier_initializer())
@@ -75,9 +75,13 @@ def sample_noise(num_samples):
 
 # training loop
 sess = tf.Session()
+# tensorboard writer
+writer = tf.summary.FileWriter("record", sess.graph)
 sess.run(tf.global_variables_initializer())
-samples = sess.run(noise_samples, feed_dict={z: sample_noise(25)})
+# for the purpose of output images
+test_noise = sample_noise(25)
 marker = 0
+
 
 for epoch in range(num_epochs):
     input_batch, _ = mnist.train.next_batch(batch_size)
@@ -90,8 +94,10 @@ for epoch in range(num_epochs):
 
     if epoch % 500 == 0:
         print("epoch %d, disc_loss = %.08f / gen_loss = %.08f" % (epoch, d_loss, g_loss))
+        samples = sess.run(noise_samples, feed_dict={z: test_noise})
         take_snapshot(samples, marker)
         marker += 1
+writer.close()
 
 # build gif
 build_gif(gif_name="trained")
